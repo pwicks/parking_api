@@ -69,7 +69,7 @@ class ReserveSpot(generics.UpdateAPIView):
         return Response(serializer.data)
 
 @csrf_exempt
-def reservation(request, id):
+def reservation(request, id, time_from, time_to):
     """
     Retrieve, update or delete a reservation.
     """
@@ -77,6 +77,8 @@ def reservation(request, id):
         print("Request: {0}".format(request))
         print("Request payload: {0}".format(dir(request)))
         print("ID: {0}".format(id))
+        print("Params: {0}".format(request.path))
+
         spot = Spot.objects.get(id=id)
     except Spot.DoesNotExist:
         return HttpResponse(status=404)
@@ -94,14 +96,16 @@ def reservation(request, id):
         serializer_context = {
             'request': request,
         }
-        spot.avail = False
-        epoch_time = int(time.time())
-        spot.time_from = epoch_time
+        spot.avail = False #@TODO can this be done instead of creating a data structure?
+        #epoch_time = int(time.time())
+        time_from = time.mktime(time.strptime(time_from, "%Y-%m-%d %H:%M:%S"));
+        time_to   = time.mktime(time.strptime(time_to,   "%Y-%m-%d %H:%M:%S"));
+        
         data = {
             "lat": spot.lat,
             "lon": spot.lon,
-            "time_from": epoch_time + 3600,
-            "time_to" : epoch_time,
+            "time_from": time_from,
+            "time_to" : time_to,
             "avail": False
         }
         

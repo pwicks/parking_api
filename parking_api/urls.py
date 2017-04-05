@@ -15,5 +15,5 @@ urlpatterns = [
     url(r'^', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^spots/radius/(?P<radius>.+)/$', RadiusList.as_view()),
-    url(r'^spots/reservation/(?P<id>.+)/$', reservation, name='reservation')
+    url(r'^spots/reservation/(?P<id>.+)/(?P<time_from>.+)/(?P<time_to>.+)/$', reservation, name='reservation')
 ]
