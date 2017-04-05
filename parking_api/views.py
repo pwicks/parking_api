@@ -96,10 +96,16 @@ def reservation(request, id):
         }
         spot.avail = False
         epoch_time = int(time.time())
-        print("time: {0}".format(epoch_time))
         spot.time_from = epoch_time
+        data = {
+            "lat": spot.lat,
+            "lon": spot.lon,
+            "time_from": epoch_time + 3600,
+            "time_to" : epoch_time,
+            "avail": False
+        }
         
-        serializer = SpotSerializer(spot, data=request.content_params, context=serializer_context)
+        serializer = SpotSerializer(spot, data=data, context=serializer_context)
         if serializer.is_valid():
             serializer.save()
             return JsonResponse(serializer.data)
