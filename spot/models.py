@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
-from django.db import models
-
+from django.db import models 
 import pyproj as proj
 from shapely import geometry
 
@@ -43,7 +42,6 @@ class Spot(models.Model):
         #    * math.cos(math.radians(destinationLat)) * math.sin(distanceLon/2) * math.sin(distanceLon/2)
         #c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
         #return earthRadius * c
-
 
 
 

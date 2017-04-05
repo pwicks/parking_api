@@ -46,3 +46,18 @@ class RadiusList(generics.ListAPIView):
 
         return queryset
 
+class Reserve(generics.UpdateAPIView):
+    serializer_class = SpotSerializer
+
+    def update(self, request, *args, **kwargs):
+        spot_id = self.kwargs(['id'])
+        instance = Spot.objects.filter(id=spot_id)
+        #instance = self.get_object()
+        instance.avail = False
+        instance.save()
+
+        serializer = self.get_serializer(instance)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(serializer.data)
