@@ -12,18 +12,15 @@ class Spot(models.Model):
     time_from  = models.FloatField()
     time_to    = models.FloatField()
 
-    def spots_within_radius(origin, radius):
+    def withinRadius(self, origin, radius):
         """ 
         Assume that radius is supplied with its origin, and that they are passed as seperate parameters.
-        Assume radius is in meters.
+        Assume radius is an integer in meters.
         Assume radius is a list in the form [lon, lat]! Devise a test and a simple way to correct, if possible.
+        We are abrtacting the geography into geometry, (and assuming WGS84 Geography, rather than Google epsg:900913), for simplicity.
         """
         spots_in_range = []
-
-        # Correct for the curvature of the Earth, assuming WGS84 geographic coordinates (not GoogleMaps projection epsg:900913).
-        # (We are abrtacting the geography into geometry, for simplicity.)
-        crs_wgs = proj.Proj(init='epsg:4326')
-        x, y = proj.transform(crs_wgs, crs_bng, origin[0], origin[1])
+        retval         = False
  
         #create a coordinate pair for the origin of the radius.
         origin_point = geometry.Point(origin)
@@ -31,13 +28,12 @@ class Spot(models.Model):
         #create a circle, based on the radius and its origin, to measure against.
         search_radius_buffer = origin_point.buffer(radius)
         
-        all_spots = Spot.objects.all()
-        for spot in all_spots:
-            spot_point = [spot.lon, spot.lat]
-            if spot_point.within(circle_buffer): 
-                spots_in_range.append(spot)
+        spot_point = geometry.Point([self.lon, self.lat])
 
-        return spots_in_range
+        if spot_point.within(search_radius_buffer): 
+            retval = True
+
+            return retval
 
         # Removeing. Avoid reinventing what already exists in libraries:
         #earthRadius = 6371 

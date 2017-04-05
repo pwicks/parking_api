@@ -1,8 +1,11 @@
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group 
 from rest_framework import viewsets
 from serializers import UserSerializer, GroupSerializer, SpotSerializer
 from spot.models import Spot
 from rest_framework import generics
+
+# This is simply a fixture that stands-in for a user property for origin of radius.
+RADIUS_ORIGIN = [-122.463966, 37.803590]
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -26,4 +29,20 @@ class SpotViewSet(viewsets.ModelViewSet):
     #queryset = Spot.objects.all()
     queryset = Spot.objects.filter(avail=True)
     serializer_class = SpotSerializer
+
+class RadiusList(generics.ListAPIView):
+    serializer_class = SpotSerializer
+
+    def get_queryset(self):
+        radius = int(self.kwargs['radius'])
+
+        ids_in_range = []
+        avail_spots = Spot.objects.filter(avail=True)
+        for spot in avail_spots:
+            if spot.withinRadius(RADIUS_ORIGIN, radius):
+                ids_in_range.append(spot.id)
+
+        queryset = Spot.objects.filter(pk__in=ids_in_range)
+
+        return queryset
 
