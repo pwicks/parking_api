@@ -18,3 +18,4 @@ class SpotSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Spot
         fields = ('url', 'lat', 'lon', 'avail', 'time_from', 'time_to')
+

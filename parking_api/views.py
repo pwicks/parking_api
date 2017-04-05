@@ -3,6 +3,8 @@ from rest_framework import viewsets
 from serializers import UserSerializer, GroupSerializer, SpotSerializer
 from spot.models import Spot
 from rest_framework import generics
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 
 # This is simply a fixture that stands-in for a user property for origin of radius.
 RADIUS_ORIGIN = [-122.463966, 37.803590]
@@ -46,7 +48,8 @@ class RadiusList(generics.ListAPIView):
 
         return queryset
 
-class Reserve(generics.UpdateAPIView):
+class ReserveSpot(generics.UpdateAPIView):
+    # Class based examples hide important details, so I'm going to use a simpler mechanism, below.
     serializer_class = SpotSerializer
 
     def update(self, request, *args, **kwargs):
@@ -61,3 +64,44 @@ class Reserve(generics.UpdateAPIView):
         self.perform_update(serializer)
 
         return Response(serializer.data)
+
+@csrf_exempt
+def reservation(request, id):
+    """
+    Retrieve, update or delete a reservation.
+    """
+    try:
+        spot = Spot.objects.get(pk=id)
+    except Spot.DoesNotExist:
+        return HttpResponse(status=404)
+
+    if request.method == 'GET':
+        serializer_context = {
+            'request': request,
+        }
+        serializer = SpotSerializer(spot, context=serializer_context)
+        return JsonResponse(serializer.data)
+
+    elif request.method == 'PUT':
+        data = JSONParser().parse(request)
+        serializer_context = {
+            'request': request,
+        }
+        serializer = SpotSerializer(spot, data=data, context=serializer_context)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data)
+        return JsonResponse(serializer.errors, status=400)
+
+    elif request.method == 'DELETE':
+        # This is an abuse of the RESTful nature of the API, but is useful for the moment. 
+        # @TODO Replace or remove this.
+        spot.available = True
+        serializer_context = {
+            'request': request,
+        }
+        serializer = SpotSerializer(spot, context=serializer_context)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data)
+        return JsonResponse(serializer.errors, status=400)
